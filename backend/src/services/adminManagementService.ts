@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { NotificationService } from './notificationService';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +39,12 @@ export class AdminManagementService {
     const device = await prisma.device.update({
       where: { id: deviceId },
       data: { isVerified: true },
+      include: { user: true },
     });
+
+    // Send notification
+    await NotificationService.sendToDevice(device.deviceId, 'Device Verified', 'Your device has been verified. You can now log in.');
+
     return device;
   }
 
