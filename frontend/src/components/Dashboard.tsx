@@ -1,44 +1,106 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import Card from './Card';
+import Table from './Table';
+import Button from './Button';
+import api from '../utils/api';
+import { API_ENDPOINTS } from '../constants';
 
-interface DashboardProps {
-  token: string;
-  onLogout: () => void;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
+const Dashboard: React.FC = () => {
   const [users, setUsers] = useState([]);
   const [devices, setDevices] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     fetchData();
-  }, [token]);
+  }, []);
 
   const fetchData = async () => {
     try {
       const [usersRes, devicesRes, transactionsRes] = await Promise.all([
-        axios.get('http://localhost:3001/admin/users'),
-        axios.get('http://localhost:3001/admin/devices'),
-        axios.get('http://localhost:3001/admin/transactions'),
+        api.get(API_ENDPOINTS.USERS),
+        api.get(API_ENDPOINTS.DEVICES),
+        api.get(API_ENDPOINTS.TRANSACTIONS),
       ]);
       setUsers(usersRes.data.users);
       setDevices(devicesRes.data.devices);
       setTransactions(transactionsRes.data.transactions);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const verifyDevice = async (deviceId: string) => {
     try {
-      await axios.put(`http://localhost:3001/admin/devices/${deviceId}/verify`);
+      await api.put(`${API_ENDPOINTS.DEVICES}/${deviceId}/verify`);
       fetchData();
     } catch (error) {
       alert('Failed to verify device');
     }
   };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    navigate('/');
+  };
+
+  const userColumns = [
+    { key: 'email', header: 'Email' },
+    { key: 'balance', header: 'Balance' },
+    { key: 'devices', header: 'Devices', render: (value: any[]) => value.length },
+  ];
+
+  const deviceColumns = [
+    { key: 'deviceId', header: 'Device ID' },
+    { key: 'user', header: 'User Email', render: (value: any) => value.email },
+    {
+      key: 'isVerified',
+      header: 'Verified',
+      render: (value: boolean) => (
+        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+          value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {value ? 'Verified' : 'Unverified'}
+        </span>
+      ),
+    },
+    {
+      key: 'id',
+      header: 'Action',
+      render: (value: string, row: any) => (
+        !row.isVerified && (
+          <Button
+            size="sm"
+            onClick={() => verifyDevice(value)}
+          >
+            Verify
+          </Button>
+        )
+      ),
+    },
+  ];
+
+  const transactionColumns = [
+    { key: 'type', header: 'Type', render: (value: string) => value.charAt(0).toUpperCase() + value.slice(1) },
+    { key: 'amount', header: 'Amount' },
+    { key: 'user', header: 'User Email', render: (value: any) => value.email },
+    { key: 'createdAt', header: 'Date', render: (value: string) => new Date(value).toLocaleString() },
+  ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -46,118 +108,26 @@ const Dashboard: React.FC<DashboardProps> = ({ token, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            <button
-              onClick={onLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition duration-200"
-            >
+            <Button variant="secondary" onClick={handleLogout}>
               Logout
-            </button>
+            </Button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="mb-8">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Users</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Devices</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user: any) => (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${user.balance}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.devices.length}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="px-4 py-6 sm:px-0 space-y-6">
+          <Card title="Users">
+            <Table columns={userColumns} data={users} />
+          </Card>
 
-          <div className="mb-8">
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Devices</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device ID</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verified</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {devices.map((device: any) => (
-                        <tr key={device.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{device.deviceId}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{device.user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${device.isVerified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                              {device.isVerified ? 'Verified' : 'Unverified'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {!device.isVerified && (
-                              <button
-                                onClick={() => verifyDevice(device.id)}
-                                className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition duration-200"
-                              >
-                                Verify
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Card title="Devices">
+            <Table columns={deviceColumns} data={devices} />
+          </Card>
 
-          <div>
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Transactions</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Email</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {transactions.map((txn: any) => (
-                        <tr key={txn.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 capitalize">{txn.type}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${txn.amount}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{txn.user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(txn.createdAt).toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
+          <Card title="Transactions">
+            <Table columns={transactionColumns} data={transactions} />
+          </Card>
         </div>
       </main>
     </div>

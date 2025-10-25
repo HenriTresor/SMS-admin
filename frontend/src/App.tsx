@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 
 function App() {
-  const [token, setToken] = useState<string | null>(null);
+  const token = localStorage.getItem('adminToken');
 
-  if (!token) {
-    return <Login onLogin={setToken} />;
-  }
-
-  return <Dashboard token={token} onLogout={() => setToken(null)} />;
+  return (
+    <Routes>
+      <Route path="/" element={token ? <Navigate to="/dashboard" /> : <Login />} />
+      <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/" />} />
+    </Routes>
+  );
 }
 
 export default App;
