@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { PrismaClient } from '@prisma/client';
+import adminRoutes from './routes/adminRoutes';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -20,6 +21,8 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Routes
+app.use('/admin', adminRoutes);
+
 app.get('/', (req, res) => {
   res.json({ message: 'Admin Backend API' });
 });
