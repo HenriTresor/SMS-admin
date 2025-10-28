@@ -155,15 +155,15 @@ const Dashboard: React.FC = () => {
     navigate('/');
   };
 
-  const StatCard: React.FC<{ title: string; value: string | number; icon: string; color: string }> = ({ title, value, icon, color }) => (
-    <Card className="p-6">
-      <div className="flex items-center">
-        <div className={`p-3 rounded-full ${color}`}>
-          <span className="text-2xl">{icon}</span>
+  const StatCard: React.FC<{ title: string; value: string | number; icon: string; accent: string }> = ({ title, value, icon, accent }) => (
+    <Card className="p-6 shadow-xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs uppercase tracking-widest text-slate-300/80">{title}</p>
+          <p className="mt-3 text-3xl font-semibold text-white">{value}</p>
         </div>
-        <div className="ml-4">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <div className={`flex h-12 w-12 items-center justify-center rounded-full border border-white/10 ${accent}`}>
+          <span className="text-xl">{icon}</span>
         </div>
       </div>
     </Card>
@@ -171,243 +171,275 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-xl text-gray-600">Loading dashboard...</p>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-14 w-14 rounded-full border-4 border-white/20 border-t-indigo-400 animate-spin" />
+          <p className="text-sm text-slate-400">Loading admin dashboard…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
+      <div className="pointer-events-none absolute inset-0 opacity-60">
+        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="absolute top-1/2 right-0 h-80 w-80 -translate-y-1/2 rounded-full bg-purple-500/10 blur-[120px]" />
+        <div className="absolute -bottom-40 left-1/3 h-96 w-96 rounded-full bg-slate-600/20 blur-3xl" />
+      </div>
+
+      <div className="relative z-10">
+        <header className="border-b border-white/10 bg-slate-900/60 backdrop-blur">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Credit Jambo Admin</h1>
-              <p className="text-gray-600">Savings Management Dashboard</p>
+              <h1 className="text-3xl font-semibold text-white">Credit Jambo Admin</h1>
+              <p className="text-sm text-slate-300/80">Savings management &amp; device security hub</p>
             </div>
             <Button variant="secondary" onClick={handleLogout}>
               Logout
             </Button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {/* Navigation Tabs */}
-        <div className="mb-6">
-          <nav className="flex space-x-8">
-            {[
-              { id: 'overview', label: 'Overview', icon: '📊' },
-              { id: 'users', label: 'Users', icon: '👥' },
-              { id: 'devices', label: 'Devices', icon: '📱' },
-              { id: 'transactions', label: 'Transactions', icon: '💰' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center px-1 py-2 border-b-2 font-medium text-sm ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Search and Filters */}
-        {(activeTab !== 'overview') && (
-          <div className="mb-6 flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={setSearchTerm}
-                className="w-full"
-              />
-            </div>
-            {activeTab === 'devices' && (
-              <select
-                value={deviceFilter}
-                onChange={(e) => setDeviceFilter(e.target.value as any)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Devices</option>
-                <option value="verified">Verified Only</option>
-                <option value="unverified">Unverified Only</option>
-              </select>
-            )}
+        <main className="mx-auto w-full max-w-7xl px-6 py-10">
+          <div className="mb-8">
+            <nav className="flex flex-wrap gap-3">
+              {[
+                { id: 'overview', label: 'Overview', icon: '📊' },
+                { id: 'users', label: 'Users', icon: '👥' },
+                { id: 'devices', label: 'Devices', icon: '📱' },
+                { id: 'transactions', label: 'Transactions', icon: '💰' },
+              ].map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center space-x-2 rounded-full px-5 py-2 text-sm font-medium transition ${
+                      isActive
+                        ? 'bg-white/20 text-white shadow-lg shadow-slate-900/30'
+                        : 'bg-white/5 text-slate-300 hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{tab.icon}</span>
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-        )}
 
-        {/* Content based on active tab */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6">
-            {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total Users"
-                value={stats.totalUsers}
-                icon="👥"
-                color="bg-blue-100 text-blue-600"
-              />
-              <StatCard
-                title="Total Balance"
-                value={`$${stats.totalBalance.toLocaleString()}`}
-                icon="💰"
-                color="bg-green-100 text-green-600"
-              />
-              <StatCard
-                title="Verified Devices"
-                value={`${stats.verifiedDevices}/${stats.totalDevices}`}
-                icon="📱"
-                color="bg-purple-100 text-purple-600"
-              />
-              <StatCard
-                title="Recent Transactions"
-                value={stats.recentTransactions}
-                icon="⚡"
-                color="bg-orange-100 text-orange-600"
-              />
+          {activeTab !== 'overview' && (
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search by email, device, or type"
+                  value={searchTerm}
+                  onChange={setSearchTerm}
+                  className="w-full"
+                />
+              </div>
+              {activeTab === 'devices' && (
+                <select
+                  value={deviceFilter}
+                  onChange={(e) => setDeviceFilter(e.target.value as any)}
+                  className="h-12 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <option value="all">All devices</option>
+                  <option value="verified">Verified only</option>
+                  <option value="unverified">Unverified only</option>
+                </select>
+              )}
             </div>
+          )}
 
-            {/* Recent Activity */}
-            <Card title="Recent Transactions" className="p-6">
-              <div className="space-y-4">
-                {filteredTransactions.slice(0, 10).map((transaction) => (
-                  <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
-                    <div className="flex items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        transaction.type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                      }`}>
-                        {transaction.type === 'deposit' ? '↑' : '↓'}
+          {activeTab === 'overview' && (
+            <div className="space-y-8">
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+                <StatCard
+                  title="Total users"
+                  value={stats.totalUsers}
+                  icon="👥"
+                  accent="bg-indigo-500/15 text-indigo-200"
+                />
+                <StatCard
+                  title="Total balance"
+                  value={`$${stats.totalBalance.toLocaleString()}`}
+                  icon="💰"
+                  accent="bg-emerald-500/15 text-emerald-200"
+                />
+                <StatCard
+                  title="Verified devices"
+                  value={`${stats.verifiedDevices}/${stats.totalDevices}`}
+                  icon="📱"
+                  accent="bg-sky-500/15 text-sky-200"
+                />
+                <StatCard
+                  title="24h transactions"
+                  value={stats.recentTransactions}
+                  icon="⚡"
+                  accent="bg-amber-500/15 text-amber-200"
+                />
+              </div>
+
+              <Card title="Recent transactions" className="p-6">
+                <div className="space-y-4">
+                  {filteredTransactions.slice(0, 8).map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between border-b border-white/10 pb-4 last:border-b-0 last:pb-0"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                            transaction.type === 'deposit'
+                              ? 'bg-emerald-500/15 text-emerald-200'
+                              : 'bg-rose-500/15 text-rose-200'
+                          }`}
+                        >
+                          {transaction.type === 'deposit' ? '↑' : '↓'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{transaction.user.email}</p>
+                          <p className="text-xs text-slate-300/80">
+                            {new Date(transaction.createdAt).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="ml-3">
-                        <p className="text-sm font-medium text-gray-900">{transaction.user.email}</p>
-                        <p className="text-xs text-gray-500">{new Date(transaction.createdAt).toLocaleString()}</p>
+                      <div
+                        className={`text-sm font-semibold ${
+                          transaction.type === 'deposit' ? 'text-emerald-300' : 'text-rose-300'
+                        }`}
+                      >
+                        {transaction.type === 'deposit' ? '+' : '-'}${transaction.amount}
                       </div>
                     </div>
-                    <div className={`text-sm font-semibold ${
-                      transaction.type === 'deposit' ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                  ))}
+                  {filteredTransactions.length === 0 && (
+                    <p className="py-6 text-center text-sm text-slate-300/70">No transactions found</p>
+                  )}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'users' && (
+            <Card title={`Users (${filteredUsers.length})`} className="p-6">
+              <div className="space-y-4">
+                {filteredUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-white">{user.email}</p>
+                      <p className="text-xs text-slate-300/70">
+                        {user.devices.length} device{user.devices.length !== 1 ? 's' : ''} • Joined{' '}
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-semibold text-emerald-300">${user.balance.toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+                {filteredUsers.length === 0 && (
+                  <p className="py-6 text-center text-sm text-slate-300/70">No users found</p>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {activeTab === 'devices' && (
+            <Card title={`Devices (${filteredDevices.length})`} className="p-6">
+              <div className="space-y-4">
+                {filteredDevices.map((device) => (
+                  <div
+                    key={device.id}
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                  >
+                    <div>
+                      <p className="font-mono text-sm text-white">{device.deviceId}</p>
+                      <p className="text-xs text-slate-300/70">{device.user.email}</p>
+                      <p className="text-xs text-slate-400/70">
+                        Added {new Date(device.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
+                          device.isVerified
+                            ? 'bg-emerald-500/15 text-emerald-200'
+                            : 'bg-rose-500/15 text-rose-200'
+                        }`}
+                      >
+                        {device.isVerified ? 'Verified' : 'Unverified'}
+                      </span>
+                      {!device.isVerified && (
+                        <Button
+                          size="sm"
+                          onClick={() => verifyDevice(device.id)}
+                          className="bg-emerald-600 text-white hover:bg-emerald-500"
+                        >
+                          Verify
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {filteredDevices.length === 0 && (
+                  <p className="py-6 text-center text-sm text-slate-300/70">No devices found</p>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {activeTab === 'transactions' && (
+            <Card title={`Transactions (${filteredTransactions.length})`} className="p-6">
+              <div className="space-y-4">
+                {filteredTransactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                          transaction.type === 'deposit'
+                            ? 'bg-emerald-500/15 text-emerald-200'
+                            : 'bg-rose-500/15 text-rose-200'
+                        }`}
+                      >
+                        {transaction.type === 'deposit' ? '↑' : '↓'}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{transaction.user.email}</p>
+                        <p className="text-xs text-slate-300/70">
+                          {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)} •{' '}
+                          {new Date(transaction.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className={`text-lg font-semibold ${
+                        transaction.type === 'deposit' ? 'text-emerald-300' : 'text-rose-300'
+                      }`}
+                    >
                       {transaction.type === 'deposit' ? '+' : '-'}${transaction.amount}
                     </div>
                   </div>
                 ))}
                 {filteredTransactions.length === 0 && (
-                  <p className="text-center text-gray-500 py-8">No transactions found</p>
+                  <p className="py-6 text-center text-sm text-slate-300/70">No transactions found</p>
                 )}
               </div>
             </Card>
-          </div>
-        )}
-
-        {activeTab === 'users' && (
-          <Card title={`Users (${filteredUsers.length})`} className="p-6">
-            <div className="space-y-4">
-              {filteredUsers.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">{user.email}</p>
-                    <p className="text-sm text-gray-500">
-                      {user.devices.length} device{user.devices.length !== 1 ? 's' : ''} •
-                      Joined {new Date(user.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-semibold text-green-600">${user.balance.toFixed(2)}</p>
-                  </div>
-                </div>
-              ))}
-              {filteredUsers.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No users found</p>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'devices' && (
-          <Card title={`Devices (${filteredDevices.length})`} className="p-6">
-            <div className="space-y-4">
-              {filteredDevices.map((device) => (
-                <div key={device.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900 font-mono text-sm">{device.deviceId}</p>
-                    <p className="text-sm text-gray-600">{device.user.email}</p>
-                    <p className="text-xs text-gray-500">
-                      Added {new Date(device.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      device.isVerified
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {device.isVerified ? 'Verified' : 'Unverified'}
-                    </span>
-                    {!device.isVerified && (
-                      <Button
-                        size="sm"
-                        onClick={() => verifyDevice(device.id)}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        Verify
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {filteredDevices.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No devices found</p>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {activeTab === 'transactions' && (
-          <Card title={`Transactions (${filteredTransactions.length})`} className="p-6">
-            <div className="space-y-4">
-              {filteredTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      transaction.type === 'deposit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                    }`}>
-                      {transaction.type === 'deposit' ? '↑' : '↓'}
-                    </div>
-                    <div className="ml-3">
-                      <p className="font-medium text-gray-900">{transaction.user.email}</p>
-                      <p className="text-sm text-gray-500">
-                        {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)} •
-                        {new Date(transaction.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className={`text-lg font-semibold ${
-                    transaction.type === 'deposit' ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.type === 'deposit' ? '+' : '-'}${transaction.amount}
-                  </div>
-                </div>
-              ))}
-              {filteredTransactions.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No transactions found</p>
-              )}
-            </div>
-          </Card>
-        )}
+          )}
+        </main>
       </div>
     </div>
   );
-};
+}
+;
 
 export default Dashboard;
