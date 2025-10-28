@@ -19,19 +19,23 @@ const Button: React.FC<ButtonProps> = ({
   disabled = false,
   className = '',
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition duration-200 focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseClasses =
+    'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-slate-900/10';
 
   const variantClasses = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-    secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  };
+    primary:
+      'bg-slate-900 text-slate-100 hover:bg-slate-800 hover:-translate-y-0.5 focus-visible:ring-slate-500 focus-visible:ring-offset-slate-900',
+    secondary:
+      'bg-white/80 text-slate-900 border border-slate-200 hover:bg-white focus-visible:ring-indigo-300 focus-visible:ring-offset-white',
+    danger:
+      'bg-rose-600/90 text-white hover:bg-rose-600 focus-visible:ring-rose-500 focus-visible:ring-offset-slate-900',
+  } as const;
 
   const sizeClasses = {
     sm: 'px-3 py-2 text-sm',
     md: 'px-4 py-3 text-base',
-    lg: 'px-6 py-4 text-lg',
-  };
+    lg: 'px-6 py-3.5 text-lg',
+  } as const;
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 

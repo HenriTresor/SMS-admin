@@ -22,10 +22,10 @@ const Input: React.FC<InputProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`mb-4 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-sm font-medium text-slate-100">
+          {label} {required && <span className="text-rose-300">*</span>}
         </label>
       )}
       <input
@@ -34,11 +34,11 @@ const Input: React.FC<InputProps> = ({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
-        className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ${
-          error ? 'border-red-500 focus:ring-red-500' : ''
+        className={`w-full px-4 py-3 rounded-xl border border-white/10 bg-white/10 text-white placeholder:text-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 transition duration-200 backdrop-blur ${
+          error ? 'border-rose-400 focus-visible:ring-rose-400' : ''
         }`}
       />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-rose-300">{error}</p>}
     </div>
   );
 };
