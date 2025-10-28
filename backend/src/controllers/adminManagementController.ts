@@ -24,10 +24,13 @@ export class AdminManagementController {
   static async verifyDevice(req: AdminAuthRequest, res: Response) {
     try {
       const { deviceId } = req.params;
+      if (!deviceId) {
+        return res.status(400).json({ error: 'Device ID is required' });
+      }
       const device = await AdminManagementService.verifyDevice(deviceId);
-      res.json({ device });
+      return res.json({ device });
     } catch (error: any) {
-      res.status(400).json({ error: error.message });
+      return res.status(400).json({ error: error.message });
     }
   }
 

@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ${ADMIN_DB_CONTAINER_NAME:-credit-jambo-admin-db}
+    environment:
+      POSTGRES_DB: ${ADMIN_DB_NAME:-credit_jambo}
+      POSTGRES_USER: ${ADMIN_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${ADMIN_DB_PASSWORD:-postgres}
+    ports:
+      - "${ADMIN_DB_PORT:-5433}:5432"
+    volumes:
+      - admin-db-data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ${ADMIN_BACKEND_CONTAINER_NAME:-credit-jambo-admin-backend}
+    environment:
+      DATABASE_URL: ${ADMIN_DATABASE_URL:-postgresql://postgres:postgres@db:5432/credit_jambo}
+      JWT_SECRET: ${ADMIN_JWT_SECRET:-changeme}
+      PORT: ${ADMIN_BACKEND_PORT:-3001}
+    ports:
+      - "${ADMIN_BACKEND_PORT:-3001}:3001"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  admin-db-data:

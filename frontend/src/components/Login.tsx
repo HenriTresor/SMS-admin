@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Input from './Input';
-import Button from './Button';
-import api from '../utils/api';
 import { API_ENDPOINTS } from '../constants';
+import { forceUpdate } from '../App';
+import api from '../utils/api';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -12,7 +13,9 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); // Prevent form submission and page refresh
+
     if (!username || !password) {
       setError('Please fill in all fields');
       return;
@@ -22,11 +25,30 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const response = await api.post(API_ENDPOINTS.LOGIN, { username, password });
-      localStorage.setItem('adminToken', response.data.token);
-      navigate('/dashboard');
+      const response = await api.post(API_ENDPOINTS.LOGIN, { username, password }, {
+        validateStatus: (status) => status < 500 // Accept all status codes below 500
+      });
+      console.log('Login response:', response.data); // Debug log
+
+      if (response.status === 200 && response.data && response.data.token) {
+        localStorage.setItem('adminToken', response.data.token);
+        if (forceUpdate) forceUpdate();
+        navigate('/dashboard');
+        // fallback
+        setTimeout(() => {
+          if (window.location.pathname !== '/dashboard') {
+            window.location.href = '/dashboard';
+          }
+        }, 100);
+      } else {
+        console.log('Login failed with status:', response.status);
+        const errorMessage = response.data?.error || 'Invalid credentials';
+        setError(errorMessage);
+      }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed');
+      console.error('Login error:', err); // Debug log
+      const errorMessage = err.response?.data?.error || err.message || 'Login failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -46,13 +68,12 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        <div className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-6" noValidate>
           <Input
             label="Username"
             placeholder="Enter your username"
             value={username}
             onChange={setUsername}
-            required
           />
           <Input
             label="Password"
@@ -60,17 +81,16 @@ const Login: React.FC = () => {
             placeholder="Enter your password"
             value={password}
             onChange={setPassword}
-            required
           />
-        </div>
 
-        <Button
-          onClick={handleLogin}
-          disabled={loading}
-          className="w-full mt-8"
-        >
-          {loading ? 'Signing In...' : 'Sign In'}
-        </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-8 px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+          >
+            {loading ? 'Signing In...' : 'Sign In'}
+          </button>
+        </form>
       </div>
     </div>
   );

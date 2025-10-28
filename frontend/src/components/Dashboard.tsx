@@ -60,6 +60,8 @@ const Dashboard: React.FC = () => {
   const [deviceFilter, setDeviceFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const navigate = useNavigate();
 
+  console.log('Dashboard component mounted, token:', localStorage.getItem('adminToken'));
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -70,15 +72,20 @@ const Dashboard: React.FC = () => {
 
   const fetchData = async () => {
     try {
+      console.log('Fetching dashboard data...');
       const [usersRes, devicesRes, transactionsRes] = await Promise.all([
         api.get(API_ENDPOINTS.USERS),
         api.get(API_ENDPOINTS.DEVICES),
         api.get(API_ENDPOINTS.TRANSACTIONS),
       ]);
 
+      console.log('API responses:', { usersRes, devicesRes, transactionsRes });
+
       const usersData = usersRes.data.users || [];
       const devicesData = devicesRes.data.devices || [];
       const transactionsData = transactionsRes.data.transactions || [];
+
+      console.log('Parsed data:', { usersData: usersData.length, devicesData: devicesData.length, transactionsData: transactionsData.length });
 
       setUsers(usersData);
       setDevices(devicesData);
@@ -96,10 +103,10 @@ const Dashboard: React.FC = () => {
         ).length,
       };
       setStats(stats);
+      console.log('Stats calculated:', stats);
 
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      alert('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }

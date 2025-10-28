@@ -36,6 +36,9 @@ export class AdminManagementService {
   }
 
   static async verifyDevice(deviceId: string) {
+    if (!deviceId) {
+      throw new Error('Device ID is required');
+    }
     const device = await prisma.device.update({
       where: { id: deviceId },
       data: { isVerified: true },
