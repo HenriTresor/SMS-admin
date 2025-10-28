@@ -189,11 +189,11 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="relative z-10">
-        <header className="border-b border-white/10 bg-slate-900/60 backdrop-blur">
+        <header className="border-b border-white/10 bg-slate-950/70 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
             <div>
-              <h1 className="text-3xl font-semibold text-white">Credit Jambo Admin</h1>
-              <p className="text-sm text-slate-300/80">Savings management &amp; device security hub</p>
+              <h1 className="text-2xl font-semibold text-white">Credit Jambo admin</h1>
+              <p className="text-xs text-slate-300/80">Savings &amp; device oversight</p>
             </div>
             <Button variant="secondary" onClick={handleLogout}>
               Logout
@@ -240,15 +240,18 @@ const Dashboard: React.FC = () => {
                 />
               </div>
               {activeTab === 'devices' && (
-                <select
-                  value={deviceFilter}
-                  onChange={(e) => setDeviceFilter(e.target.value as any)}
-                  className="h-12 rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
-                >
-                  <option value="all">All devices</option>
-                  <option value="verified">Verified only</option>
-                  <option value="unverified">Unverified only</option>
-                </select>
+                <div className="relative w-full sm:w-56">
+                  <select
+                    value={deviceFilter}
+                    onChange={(e) => setDeviceFilter(e.target.value as any)}
+                    className="h-12 w-full appearance-none rounded-xl border border-white/20 bg-slate-900/80 px-4 pr-10 text-sm text-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                  >
+                    <option value="all">All devices</option>
+                    <option value="verified">Verified only</option>
+                    <option value="unverified">Unverified only</option>
+                  </select>
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-300">▾</span>
+                </div>
               )}
             </div>
           )}
